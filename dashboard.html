@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoteHub | Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="dashboard">
+    <div id="app-nav"></div>
+
+    <main>
+      <header class="page-header reveal">
+        <h1 id="welcomeTitle">Welcome back</h1>
+        <p class="section-subtitle">Monitor your participation and jump into ongoing polls.</p>
+      </header>
+
+      <section class="grid cols-3">
+        <article class="card reveal delay-1">
+          <p class="metric-value" id="activePollsCount">0</p>
+          <p class="metric-label">Active Polls</p>
+        </article>
+        <article class="card reveal delay-2">
+          <p class="metric-value" id="completedPollsCount">0</p>
+          <p class="metric-label">Completed Polls</p>
+        </article>
+        <article class="card reveal delay-3">
+          <p class="metric-value" id="totalVotesCount">0</p>
+          <p class="metric-label">Total Votes Cast by You</p>
+        </article>
+      </section>
+
+      <section class="card reveal" style="margin-top: 20px">
+        <h2 class="section-title">Ready to participate?</h2>
+        <p class="section-subtitle">Open Poll Center to cast your vote in available polls.</p>
+        <a href="polls.html" class="btn btn-primary">Go to Poll Center</a>
+      </section>
+    </main>
+
+    <div id="app-footer"></div>
+    <script src="script.js"></script>
+  </body>
+</html>

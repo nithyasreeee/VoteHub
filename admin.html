@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoteHub | Admin Panel</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="admin">
+    <div id="app-nav"></div>
+
+    <main>
+      <header class="page-header reveal">
+        <h1>Admin Panel</h1>
+        <p class="section-subtitle">Create and manage polls with instant result visibility.</p>
+      </header>
+
+      <section class="grid cols-2">
+        <article class="card reveal delay-1">
+          <h2 class="section-title">Create Poll</h2>
+          <form id="pollForm" novalidate>
+            <div class="input-group">
+              <label for="pollTitle">Poll Title</label>
+              <input id="pollTitle" type="text" placeholder="e.g. Preferred Team Outing Day" required />
+            </div>
+            <div class="input-group">
+              <label for="pollDescription">Description</label>
+              <textarea id="pollDescription" rows="3" placeholder="Provide context for voters" required></textarea>
+            </div>
+
+            <div>
+              <label>Poll Options</label>
+              <div id="optionsWrap" class="options-builder"></div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <button type="button" id="addOptionBtn" class="btn btn-secondary">Add Option</button>
+              <button type="submit" class="btn btn-primary">Create Poll</button>
+            </div>
+            <p id="pollMessage" class="form-message"></p>
+          </form>
+        </article>
+
+        <article class="card reveal delay-2">
+          <h2 class="section-title">Manage Polls</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Options</th>
+                  <th>Results</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminPollRows"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <div id="app-footer"></div>
+    <script src="script.js"></script>
+  </body>
+</html>

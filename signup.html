@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoteHub | Signup</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="signup">
+    <div id="app-nav"></div>
+
+    <main>
+      <section class="auth-wrap">
+        <article class="auth-card reveal">
+          <h1 class="section-title">Create your account</h1>
+          <p class="section-subtitle">Join VoteHub and start participating in transparent digital elections.</p>
+
+          <form id="signupForm" novalidate>
+            <div class="input-group">
+              <label for="name">Full Name</label>
+              <input id="name" type="text" placeholder="Your full name" required />
+            </div>
+            <div class="input-group">
+              <label for="email">Email</label>
+              <input id="email" type="email" placeholder="you@company.com" required />
+            </div>
+            <div class="input-group">
+              <label for="password">Password</label>
+              <input id="password" type="password" placeholder="Minimum 6 characters" required />
+            </div>
+            <button class="btn btn-primary" type="submit">Create Account</button>
+            <p id="signupMessage" class="form-message"></p>
+          </form>
+
+          <p class="auth-links">Already have an account? <a href="login.html">Login</a></p>
+        </article>
+      </section>
+    </main>
+
+    <div id="app-footer"></div>
+    <script src="script.js"></script>
+  </body>
+</html>
