@@ -189,11 +189,11 @@ function renderFooter() {
           <div>
             <h4>Contact</h4>
             <p>Email: support@votehub.app</p>
-            <p>Phone: +1 202-555-0117</p>
+            <p>Phone: +91 9000222476 </p>
             <div class="social">
-              <a href="#" aria-label="LinkedIn">in</a>
-              <a href="#" aria-label="Twitter">tw</a>
-              <a href="#" aria-label="Dribbble">dr</a>
+              <a href="#" aria-label="LinkedIn">Lin</a>
+              <a href="#" aria-label="Instagram">Ins</a>
+              <a href="#" aria-label="Dribbble">Red</a>
             </div>
           </div>
         </div>
