@@ -67,6 +67,22 @@ function getVoteKey(email, pollId) {
   return `${email}__${pollId}`;
 }
 
+function normalizePollSettings(poll) {
+  const mode = poll?.settings?.mode === 'multiple' ? 'multiple' : 'single';
+  const optionCount = Array.isArray(poll?.options) ? poll.options.length : 0;
+
+  if (mode === 'single') {
+    return { mode: 'single', maxSelections: 1 };
+  }
+
+  const parsedMax = Number(poll?.settings?.maxSelections);
+  const maxSelections = Number.isInteger(parsedMax) ? parsedMax : 2;
+  return {
+    mode: 'multiple',
+    maxSelections: Math.min(Math.max(maxSelections, 2), Math.max(optionCount, 2))
+  };
+}
+
 function ensureSeedData() {
   const users = getUsers();
   const adminIndex = users.findIndex((user) => user.email === DEFAULT_ADMIN.email);
@@ -478,23 +494,35 @@ function initPollsPage(user) {
 
   host.innerHTML = polls
     .map((poll) => {
+      const settings = normalizePollSettings(poll);
       const voteKey = getVoteKey(user.email, poll.id);
-      const votedOptionId = votes[voteKey];
-      const voted = Boolean(votedOptionId);
+      const storedSelection = votes[voteKey];
+      const selectedOptionIds = Array.isArray(storedSelection)
+        ? storedSelection
+        : storedSelection
+          ? [storedSelection]
+          : [];
+      const voted = selectedOptionIds.length > 0;
+      const inputType = settings.mode === 'multiple' ? 'checkbox' : 'radio';
+      const voteHint =
+        settings.mode === 'multiple'
+          ? `Select up to ${settings.maxSelections} option${settings.maxSelections > 1 ? 's' : ''}.`
+          : 'Select exactly one option.';
 
       return `
         <article class="card poll-card reveal">
           ${voted ? '<span class="status-pill voted">Already Voted</span>' : ''}
           <h3>${poll.title}</h3>
           <p>${poll.description}</p>
+          <p class="section-subtitle">${voteHint}</p>
           <form class="vote-form" data-poll-id="${poll.id}">
             <div class="option-list">
               ${poll.options
                 .map(
                   (option) => `
                     <label class="option-item">
-                      <input type="radio" name="poll-${poll.id}" value="${option.id}" ${voted ? 'disabled' : ''} ${
-                    votedOptionId === option.id ? 'checked' : ''
+                      <input type="${inputType}" name="poll-${poll.id}" value="${option.id}" ${voted ? 'disabled' : ''} ${
+                    selectedOptionIds.includes(option.id) ? 'checked' : ''
                   }>
                       <span>${option.text}</span>
                     </label>
@@ -517,6 +545,9 @@ function initPollsPage(user) {
 
       const pollId = form.dataset.pollId;
       const poll = getPolls().find((item) => item.id === pollId);
+      if (!poll) return;
+
+      const settings = normalizePollSettings(poll);
       const freshVotes = getVotes();
       const voteKey = getVoteKey(user.email, pollId);
 
@@ -525,9 +556,25 @@ function initPollsPage(user) {
         return;
       }
 
-      const selected = form.querySelector(`input[name="poll-${pollId}"]:checked`);
-      if (!selected) {
-        setMessage(`msg-${pollId}`, 'Please select an option before voting.', 'error');
+      const selectedInputs = [...form.querySelectorAll(`input[name="poll-${pollId}"]:checked`)];
+      const selectedIds = selectedInputs.map((input) => input.value);
+
+      if (!selectedIds.length) {
+        setMessage(`msg-${pollId}`, 'Please select at least one option before voting.', 'error');
+        return;
+      }
+
+      if (settings.mode === 'single' && selectedIds.length !== 1) {
+        setMessage(`msg-${pollId}`, 'Please select exactly one option.', 'error');
+        return;
+      }
+
+      if (settings.mode === 'multiple' && selectedIds.length > settings.maxSelections) {
+        setMessage(
+          `msg-${pollId}`,
+          `You can select up to ${settings.maxSelections} option${settings.maxSelections > 1 ? 's' : ''}.`,
+          'error'
+        );
         return;
       }
 
@@ -535,12 +582,15 @@ function initPollsPage(user) {
       const pollIndex = polls.findIndex((item) => item.id === pollId);
       if (pollIndex === -1) return;
 
-      const option = polls[pollIndex].options.find((item) => item.id === selected.value);
-      if (!option) return;
+      const selectedSet = new Set(selectedIds);
+      const validSelection = polls[pollIndex].options.filter((item) => selectedSet.has(item.id));
+      if (!validSelection.length) return;
 
       // Save one vote per user per poll.
-      option.votes += 1;
-      freshVotes[voteKey] = option.id;
+      validSelection.forEach((option) => {
+        option.votes += 1;
+      });
+      freshVotes[voteKey] = selectedIds;
       setPolls(polls);
       setVotes(freshVotes);
 
@@ -609,7 +659,24 @@ function initAdminPage(user) {
   const form = document.getElementById('pollForm');
   const addOptionBtn = document.getElementById('addOptionBtn');
   const optionWrap = document.getElementById('optionsWrap');
+  const voteTypeInput = document.getElementById('voteType');
+  const maxSelectionsInput = document.getElementById('maxSelections');
   let optionCount = 2;
+
+  const syncVoteTypeHint = () => {
+    const isMultiple = voteTypeInput?.value === 'multiple';
+    if (!maxSelectionsInput) return;
+
+    maxSelectionsInput.disabled = !isMultiple;
+    if (!isMultiple) {
+      maxSelectionsInput.value = '1';
+    } else if (Number(maxSelectionsInput.value) < 2) {
+      maxSelectionsInput.value = '2';
+    }
+  };
+
+  voteTypeInput?.addEventListener('change', syncVoteTypeHint);
+  syncVoteTypeHint();
 
   if (optionWrap && optionWrap.children.length === 0) {
     optionWrap.insertAdjacentHTML('beforeend', createOptionInput(1));
@@ -626,6 +693,8 @@ function initAdminPage(user) {
 
     const title = document.getElementById('pollTitle').value.trim();
     const description = document.getElementById('pollDescription').value.trim();
+    const voteType = voteTypeInput?.value === 'multiple' ? 'multiple' : 'single';
+    const requestedMaxSelections = Number(maxSelectionsInput?.value || 1);
     const options = [...document.querySelectorAll('input[name="option"]')]
       .map((input) => input.value.trim())
       .filter(Boolean);
@@ -645,6 +714,14 @@ function initAdminPage(user) {
       return;
     }
 
+    if (voteType === 'multiple' && (!Number.isInteger(requestedMaxSelections) || requestedMaxSelections < 2)) {
+      setMessage('pollMessage', 'For multiple choice, max selections must be at least 2.', 'error');
+      return;
+    }
+
+    const maxSelections =
+      voteType === 'multiple' ? Math.min(requestedMaxSelections, options.length) : 1;
+
     const polls = getPolls();
     polls.unshift({
       id: crypto.randomUUID(),
@@ -652,6 +729,10 @@ function initAdminPage(user) {
       description,
       createdBy: user.email,
       createdAt: Date.now(),
+      settings: {
+        mode: voteType,
+        maxSelections
+      },
       options: options.map((optionText) => ({
         id: crypto.randomUUID(),
         text: optionText,
@@ -665,6 +746,13 @@ function initAdminPage(user) {
     optionCount = 2;
     optionWrap.insertAdjacentHTML('beforeend', createOptionInput(1));
     optionWrap.insertAdjacentHTML('beforeend', createOptionInput(2));
+    if (voteTypeInput) {
+      voteTypeInput.value = 'single';
+    }
+    if (maxSelectionsInput) {
+      maxSelectionsInput.value = '2';
+    }
+    syncVoteTypeHint();
 
     setMessage('pollMessage', 'Poll created successfully.', 'success');
     renderAdminPollTable();

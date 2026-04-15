@@ -438,8 +438,10 @@ select:focus {
   gap: 10px;
 }
 
-.option-item input[type='radio'] {
+.option-item input[type='radio'],
+.option-item input[type='checkbox'] {
   width: auto;
+  flex-shrink: 0;
 }
 
 .status-pill {

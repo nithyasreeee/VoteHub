@@ -33,6 +33,18 @@
               <div id="optionsWrap" class="options-builder"></div>
             </div>
 
+            <div class="input-group">
+              <label for="voteType">Vote Type</label>
+              <select id="voteType" required>
+                <option value="single" selected>Single choice (only 1 option)</option>
+                <option value="multiple">Multiple choice (more than 1 option)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="maxSelections">Max selections (for multiple choice)</label>
+              <input id="maxSelections" type="number" min="2" value="2" />
+            </div>
+
             <div style="display: flex; gap: 10px; flex-wrap: wrap">
               <button type="button" id="addOptionBtn" class="btn btn-secondary">Add Option</button>
               <button type="submit" class="btn btn-primary">Create Poll</button>
