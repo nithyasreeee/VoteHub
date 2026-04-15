@@ -408,13 +408,16 @@ function buildResultMarkup(poll) {
   const rawTotalVotes = totalVotesInPoll(poll);
   const totalVotes = rawTotalVotes || 1;
   const pieData = createPieChart(poll);
+  const topShare = poll.options.length
+    ? Math.max(...poll.options.map((option) => Math.round((option.votes / totalVotes) * 100)))
+    : 0;
 
   return `
     <div class="result-block">
       <div class="results-container">
         <div class="pie-wrapper">
           ${pieData.svg}
-          <p class="pie-center-text"><strong>${rawTotalVotes}</strong><br><small>votes</small></p>
+          <p class="pie-center-text"><strong>${topShare}%</strong><br><small>top share</small></p>
         </div>
         <div class="results-list">
           ${poll.options
@@ -425,7 +428,7 @@ function buildResultMarkup(poll) {
               return `
                 <div class="result-row">
                   <div class="result-indicator" style="background: ${color}"></div>
-                  <div class="result-label"><span>${option.text}</span><strong>${option.votes} (${percent}%)</strong></div>
+                  <div class="result-label"><span>${option.text}</span><strong>${percent}%</strong></div>
                   <div class="progress"><span style="width:${percent}%; background: ${color}"></span></div>
                 </div>
               `;
